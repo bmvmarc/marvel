@@ -14,26 +14,14 @@ export default class MarvelService {
     }
 
 
-    getAllCharacters = async () => {
-        try {
-            const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=210&${this._apiKey}`);
-            return res.data.results.map(i => this._transformCharacter(i));
-        }
-        catch (err) {
-            console.log(err);
-            return []
-        }        
+    getAllCharacters = async (offset=210, limit=9) => {
+        const res = await this.getResource(`${this._apiBase}characters?limit=${limit}&offset=${offset}&${this._apiKey}`);
+        return res.data.results.map(i => this._transformCharacter(i));      
     }
 
     getCharacter = async (id) => {
-        // try {
-            const res = await this.getResource(`${this._apiBase}characters/${id}?${this._apiKey}`);
-            return this._transformCharacter(res.data.results[0]);
-        // }
-        // catch (err) {
-        //     console.log(err);
-        //     return null
-        // }                    
+        const res = await this.getResource(`${this._apiBase}characters/${id}?${this._apiKey}`);
+        return this._transformCharacter(res.data.results[0]);              
     }
 
     _transformCharacter = (char) => {
@@ -41,6 +29,7 @@ export default class MarvelService {
         const description = char.description.length > 220 ? (char.description.substr(0, 220) + '...') : char.description;
 
         return {
+            id: char.id,
             name: char.name,
             description: description || 'No description',
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,

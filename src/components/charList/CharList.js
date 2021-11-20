@@ -1,53 +1,104 @@
 import './charList.scss';
-import abyss from '../../resources/img/abyss.jpg';
+import { Component } from 'react';
+import MarvelService from '../../services/MarvelService';
+import Spinner from '../spinner/Spinner';
+import Error from '../error/Error';
 
-const CharList = () => {
+class CharList extends Component {
 
-    return (
-        <div className="char__list">
-            <ul className="char__grid">
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
+    serv = new MarvelService();
+
+    state = {
+        list: [],
+        loading: true,
+        error: false,
+        offset: 210
+    }
+
+    componentDidMount() {
+        this.updateList();
+    }
+
+    updateList = (offsetShift=0) => {
+        
+        const newOffset = this.state.offset + offsetShift;
+
+        this.setState((state) => ({
+            loading: true,
+            error: false,
+            offset: newOffset
+        }));
+
+        this.serv.getAllCharacters(newOffset)
+            .then(this.onListLoaded)
+            .catch(this.onError);
+    }
+
+    onListLoaded = (list) => {
+        this.setState({
+            list,
+            loading: false
+        })
+    }
+
+    onError = (err) => {
+        this.setState({
+            list: [],
+            error: true,
+            loading: false
+        })
+    }
+
+    onClickLoadMore = () => {
+        this.updateList(9);
+    }
+
+    render() {
+
+        const {list, loading, error} = this.state; 
+        
+        const {onCharSelect} = this.props;
+
+        const spinner = loading ? <Spinner/> : null;
+        const errorMessage = error ? <Error/> : null;
+
+
+        const listChar = list.map((i) => 
+                    <li key={i.id} className="char__item" onClick={() => onCharSelect(i.id)}>                        
+                        <img 
+                            style={ i.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
+                            src={i.thumbnail} 
+                            alt={i.name}/>
+                        <div className="char__name">{i.name}</div>
+                        {spinner}
+                        {errorMessage}
+                    </li>
+                    );
+
+        const listErrLoad = []; 
+        for (let i = 0; i < 9; i++) {
+            listErrLoad.push(
+                <li style={{padding: 0, display: 'flex', alignItems: 'center', backgroundColor: 'white'}} key={i} className="char__item">
+                    {spinner}
+                    {errorMessage}
                 </li>
-                <li className="char__item char__item_selected">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-                <li className="char__item">
-                    <img src={abyss} alt="abyss"/>
-                    <div className="char__name">Abyss</div>
-                </li>
-            </ul>
-            <button className="button button__main button__long">
-                <div className="inner">load more</div>
-            </button>
-        </div>
-    )
+            )
+        }
+
+        return (
+            <div className="char__list">
+                <ul className="char__grid">
+                    {!( loading || errorMessage) ? listChar : listErrLoad}    
+                </ul>
+                <button 
+                    className="button button__main button__long"
+                    onClick={this.onClickLoadMore}
+                >
+                    <div className="inner">load more</div>
+                </button>
+            </div>
+        )
+    }    
 }
 
 export default CharList;
