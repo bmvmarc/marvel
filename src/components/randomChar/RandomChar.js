@@ -89,7 +89,7 @@ const View = ({char: {name, description, thumbnail, homepage, wiki}}) => {
                 <img 
                     style={ thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
                     src={thumbnail} 
-                    alt="Random character" 
+                    alt={name} 
                     className="randomchar__img"
                 />
                 

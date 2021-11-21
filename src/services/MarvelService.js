@@ -34,7 +34,8 @@ export default class MarvelService {
             description: description || 'No description',
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
-            wiki: char.urls[1].url
+            wiki: char.urls[1].url,
+            comics: char.comics.items.length ? char.comics.items : [{resourceURI: '', name: 'There are no comics with this character yet'}]
         }
     }
 
