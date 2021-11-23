@@ -12,22 +12,36 @@ class CharList extends Component {
         list: [],
         loading: true,
         error: false,
-        offset: 210
+        offset: 210,
+        charsEnded: false
+    }
+
+
+    loadMoreWhenScrolledToBottom = () => {
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+            this.updateList(9);
+        }        
     }
 
     componentDidMount() {
         this.updateList();
+
+        window.addEventListener('scroll', this.loadMoreWhenScrolledToBottom);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('scroll', this.loadMoreWhenScrolledToBottom);
     }
 
     updateList = (offsetShift=0) => {
         
         const newOffset = this.state.offset + offsetShift;
 
-        this.setState((state) => ({
+        this.setState({
             loading: true,
             error: false,
             offset: newOffset
-        }));
+        });
 
         this.serv.getAllCharacters(newOffset)
             .then(this.onListLoaded)
@@ -35,10 +49,14 @@ class CharList extends Component {
     }
 
     onListLoaded = (list) => {
-        this.setState({
-            list,
-            loading: false
-        })
+
+        const ended = list.length < 9;
+
+        this.setState((state) => ({
+            list: [...state.list, ...list],
+            loading: false,
+            charsEnded: ended
+        }))
     }
 
     onError = (err) => {
@@ -76,7 +94,7 @@ class CharList extends Component {
                     );
 
         const listErrLoad = []; 
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < 6; i++) {
             listErrLoad.push(
                 <li style={{padding: 0, display: 'flex', alignItems: 'center', backgroundColor: 'white'}} key={i} className="char__item">
                     {spinner}
@@ -93,6 +111,8 @@ class CharList extends Component {
                 <button 
                     className="button button__main button__long"
                     onClick={this.onClickLoadMore}
+                    disabled={loading}
+                    style={{display: this.state.charsEnded ? 'none' : 'block' }}
                 >
                     <div className="inner">load more</div>
                 </button>
