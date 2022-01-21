@@ -4,6 +4,7 @@ import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
 import Skeleton from '../skeleton/Skeleton'
+import PropTypes from 'prop-types';
 
 class CharInfo extends Component {
 
@@ -73,7 +74,6 @@ class CharInfo extends Component {
             </div>
         )        
     }
-
 }
 
 const View = ({char: {name, description, thumbnail, homepage, wiki, comics}}) => {
@@ -115,6 +115,10 @@ const Comics = ({comicsList}) => {
             </li>
         ))
     );
+}
+
+CharInfo.propTypes = {
+    selectedChar: PropTypes.number
 }
 
 export default CharInfo;

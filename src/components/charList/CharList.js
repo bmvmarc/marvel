@@ -3,10 +3,13 @@ import { Component } from 'react';
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
+import PropTypes from 'prop-types';
 
 class CharList extends Component {
 
-    serv = new MarvelService();
+    serv = new MarvelService()
+
+    elems = {}
 
     state = {
         list: [],
@@ -25,7 +28,6 @@ class CharList extends Component {
 
     componentDidMount() {
         this.updateList();
-
         window.addEventListener('scroll', this.loadMoreWhenScrolledToBottom);
     }
 
@@ -57,6 +59,7 @@ class CharList extends Component {
             loading: false,
             charsEnded: ended
         }))
+       
     }
 
     onError = (err) => {
@@ -71,23 +74,56 @@ class CharList extends Component {
         this.updateList(9);
     }
 
+    focusOnItem = (id) => {
+        for (const value of Object.values(this.elems)) {
+            if (value) {
+                value.classList.remove("char__item_selected")
+            }
+          }
+
+        this.elems[id].focus()
+        this.elems[id].classList.add("char__item_selected")
+    }
+
+    setRef = elem => {
+        if (elem) {
+            const id = elem.getAttribute('data-id')
+            this.elems[id] = elem 
+        }
+    }
+
     render() {
 
         const {list, loading, error} = this.state; 
-        
-        const {onCharSelect} = this.props;
-
         const spinner = loading ? <Spinner/> : null;
         const errorMessage = error ? <Error/> : null;
 
+        const listChar = list.map((item, i) => 
+                    <li key={item.id} 
+                        ref={this.setRef} 
+                        data-id={item.id}
+                        className="char__item" 
+                        onClick={() => {
+                            this.props.onCharSelect(item.id)
+                            this.focusOnItem(item.id)
+                        }}
+                        onKeyPress={(e) => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                                this.props.onCharSelect(item.id)
+                                this.focusOnItem(item.id)
+                                e.preventDefault()
+                            }
+                        }}
+                        tabIndex={0}>
 
-        const listChar = list.map((i) => 
-                    <li key={i.id} className="char__item" onClick={() => onCharSelect(i.id)}>                        
                         <img 
-                            style={ i.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
-                            src={i.thumbnail} 
-                            alt={i.name}/>
-                        <div className="char__name">{i.name}</div>
+                            style={ item.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
+                            src={item.thumbnail} 
+                            alt={item.name}/>
+                        <div 
+                            className="char__name">
+                                {item.name}
+                        </div>
                         {spinner}
                         {errorMessage}
                     </li>
@@ -120,5 +156,16 @@ class CharList extends Component {
         )
     }    
 }
+
+CharList.propTypes = {
+    onCharSelect: PropTypes.func
+}
+
+CharList.defaultProps = {
+    onCharSelect: () => {
+        console.log('default behavior')
+    }
+}
+
 
 export default CharList;
