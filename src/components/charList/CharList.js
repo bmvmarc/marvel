@@ -1,160 +1,144 @@
 import './charList.scss';
-import { Component } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
 import PropTypes from 'prop-types';
 
-class CharList extends Component {
+const CharList = (props) => {
+ 
+    const serv = new MarvelService()
 
-    serv = new MarvelService()
+    const [list, setList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [shift, setShift] = useState(210);
+    const [charsEnded, setCharsEnded] = useState(false);
 
-    elems = {}
+    useEffect(() => {
+        const options = {
+            rootMargin: '0px',
+            threshold: 1.0
+        }
+        const callback = (entries) => {
+            if (entries[0].isIntersecting) {
+                setShift(shift => shift + 9);
+            }
+        }
+        const observer = new IntersectionObserver(callback, options);      
+        observer.observe(document.getElementById('observer'));  
+    }, []);
 
-    state = {
-        list: [],
-        loading: true,
-        error: false,
-        offset: 210,
-        charsEnded: false
+    useEffect(() => {
+        console.log('eff', shift)
+        updateList()
+    }, [shift]);
+
+    const updateList = () => {
+        setLoading(true);
+        setError(false);
+
+        serv.getAllCharacters(shift)
+            .then(onListLoaded)
+            .catch(onError);
     }
 
-
-    loadMoreWhenScrolledToBottom = () => {
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-            this.updateList(9);
-        }        
+    const onListLoaded = (newListPart) => {
+        setList(list => [...list, ...newListPart]);
+        setLoading(false);
+        setCharsEnded(newListPart.length < 9);
     }
 
-    componentDidMount() {
-        this.updateList();
-        window.addEventListener('scroll', this.loadMoreWhenScrolledToBottom);
+    const onError = () => {
+        setList([]);
+        setError(true);
+        setLoading(false);
     }
 
-    componentWillUnmount() {
-        window.removeEventListener('scroll', this.loadMoreWhenScrolledToBottom);
+    const onClickLoadMore = () => {
+        updateList();
     }
 
-    updateList = (offsetShift=0) => {
-        
-        const newOffset = this.state.offset + offsetShift;
+    const itemRefs = useRef({});
 
-        this.setState({
-            loading: true,
-            error: false,
-            offset: newOffset
-        });
-
-        this.serv.getAllCharacters(newOffset)
-            .then(this.onListLoaded)
-            .catch(this.onError);
-    }
-
-    onListLoaded = (list) => {
-
-        const ended = list.length < 9;
-
-        this.setState((state) => ({
-            list: [...state.list, ...list],
-            loading: false,
-            charsEnded: ended
-        }))
-       
-    }
-
-    onError = (err) => {
-        this.setState({
-            list: [],
-            error: true,
-            loading: false
-        })
-    }
-
-    onClickLoadMore = () => {
-        this.updateList(9);
-    }
-
-    focusOnItem = (id) => {
-        for (const value of Object.values(this.elems)) {
+    const focusOnItem = (id) => {
+        for (const value of Object.values(itemRefs.current)) {
             if (value) {
                 value.classList.remove("char__item_selected")
             }
           }
 
-        this.elems[id].focus()
-        this.elems[id].classList.add("char__item_selected")
+        itemRefs.current[id].focus()
+        itemRefs.current[id].classList.add("char__item_selected")
     }
 
-    setRef = elem => {
+    const setRef = elem => {
         if (elem) {
             const id = elem.getAttribute('data-id')
-            this.elems[id] = elem 
+            itemRefs.current[id] = elem 
         }
     }
 
-    render() {
+    const spinner = loading ? <Spinner/> : null;
+    const errorMessage = error ? <Error/> : null;
 
-        const {list, loading, error} = this.state; 
-        const spinner = loading ? <Spinner/> : null;
-        const errorMessage = error ? <Error/> : null;
+    const listChar = list.map((item, i) => 
+                <li key={item.id} 
+                    ref={setRef} 
+                    data-id={item.id}
+                    className="char__item" 
+                    onClick={() => {
+                        props.onCharSelect(item.id)
+                        focusOnItem(item.id)
+                    }}
+                    onKeyPress={(e) => {
+                        if (e.key === ' ' || e.key === 'Enter') {
+                            props.onCharSelect(item.id)
+                            focusOnItem(item.id)
+                            e.preventDefault()
+                        }
+                    }}
+                    tabIndex={0}>
 
-        const listChar = list.map((item, i) => 
-                    <li key={item.id} 
-                        ref={this.setRef} 
-                        data-id={item.id}
-                        className="char__item" 
-                        onClick={() => {
-                            this.props.onCharSelect(item.id)
-                            this.focusOnItem(item.id)
-                        }}
-                        onKeyPress={(e) => {
-                            if (e.key === ' ' || e.key === 'Enter') {
-                                this.props.onCharSelect(item.id)
-                                this.focusOnItem(item.id)
-                                e.preventDefault()
-                            }
-                        }}
-                        tabIndex={0}>
-
-                        <img 
-                            style={ item.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
-                            src={item.thumbnail} 
-                            alt={item.name}/>
-                        <div 
-                            className="char__name">
-                                {item.name}
-                        </div>
-                        {spinner}
-                        {errorMessage}
-                    </li>
-                    );
-
-        const listErrLoad = []; 
-        for (let i = 0; i < 6; i++) {
-            listErrLoad.push(
-                <li style={{padding: 0, display: 'flex', alignItems: 'center', backgroundColor: 'white'}} key={i} className="char__item">
+                    <img 
+                        style={ item.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'fill'} : {}}
+                        src={item.thumbnail} 
+                        alt={item.name}/>
+                    <div 
+                        className="char__name">
+                            {item.name}
+                    </div>
                     {spinner}
                     {errorMessage}
                 </li>
-            )
-        }
+                );
 
-        return (
-            <div className="char__list">
-                <ul className="char__grid">
-                    {!( loading || errorMessage) ? listChar : listErrLoad}    
-                </ul>
-                <button 
-                    className="button button__main button__long"
-                    onClick={this.onClickLoadMore}
-                    disabled={loading}
-                    style={{display: this.state.charsEnded ? 'none' : 'block' }}
-                >
-                    <div className="inner">load more</div>
-                </button>
-            </div>
+    const listErrLoad = []; 
+    for (let i = 0; i < 6; i++) {
+        listErrLoad.push(
+            <li style={{padding: 0, display: 'flex', alignItems: 'center', backgroundColor: 'white'}} key={i} className="char__item">
+                {spinner}
+                {errorMessage}
+            </li>
         )
-    }    
+    }
+
+    return (
+        <div className="char__list">
+            <ul className="char__grid">
+                {!( loading || errorMessage) ? listChar : listErrLoad}    
+            </ul>
+            <button 
+                id='observer'
+                className="button button__main button__long"
+                onClick={onClickLoadMore}
+                disabled={loading}
+                style={{display: charsEnded ? 'none' : 'block' }}
+            >
+                <div className="inner">load more</div>
+            </button>
+        </div>
+    )
 }
 
 CharList.propTypes = {

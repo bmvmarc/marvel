@@ -4,64 +4,56 @@ import CharList from "../charList/CharList";
 import CharInfo from "../charInfo/CharInfo";
 
 import decoration from '../../resources/img/vision.png';
-import React, { Component } from "react";
+import React, { useState } from "react";
 import ErrorBoundary from "../errorBoundary/ErrorBoundary";
 
-class App extends Component {
+const App = () => {
 
-    state = {
-        selectedChar: null        
-    }    
+    const [selectedChar, setChar] = useState(null);
 
-    onCharSelect = (selectedChar) => {
-        console.log(selectedChar);
-        this.setState({
-            selectedChar
-        });
+    const onCharSelect = (id) => {
+        setChar(id)
     }
 
-    render () {
+    const showChildrenAndRenderPropsExample = false;
 
-        const showChildrenAndRenderPropsExample = false;
+    return (
+        <div className="app">
+            { showChildrenAndRenderPropsExample ? 
+                <>
+                    <Fields
+                        left = {
+                            <DynamicGreeting color={'primary'}>
+                                <h2>jopa</h2>
+                                <h3>lunatic asylum</h3>
+                            </DynamicGreeting>                        
+                        }
 
-        return (
-            <div className="app">
-                { showChildrenAndRenderPropsExample ? 
-                    <>
-                        <Fields
-                            left = {
-                                <DynamicGreeting color={'primary'}>
-                                    <h2>jopa</h2>
-                                    <h3>lunatic asylum</h3>
-                                </DynamicGreeting>                        
-                            }
+                        right = {
+                            <><h4> The right field </h4>
+                            </>
+                        }
+                    />
+                    <Counter render = {counter => <h6> count: {counter}</h6>}/>
+                    <Counter render = {counter => <div> another count: {counter}</div>}/>
+                </>
+            : null
+            }
 
-                            right = {
-                                <><h4> The right field </h4>
-                                </>
-                            }
-                        />
-                        <Counter render = {counter => <h6> count: {counter}</h6>}/>
-                        <Counter render = {counter => <div> another count: {counter}</div>}/>
-                    </>
-                : null
-                }
+            <AppHeader/>
+            <main>
+                <ErrorBoundary><RandomChar/></ErrorBoundary>                    
+                <div className="char__content">
 
-                <AppHeader/>
-                <main>
-                    <ErrorBoundary><RandomChar/></ErrorBoundary>                    
-                    <div className="char__content">
-
-                        <ErrorBoundary>
-                            <CharList onCharSelect={this.onCharSelect}/>
-                        </ErrorBoundary>
-                        <ErrorBoundary><CharInfo selectedChar={this.state.selectedChar}/></ErrorBoundary>
-                    </div>
-                    <img className="bg-decoration" src={decoration} alt="vision"/>
-                </main>
-            </div>
-        )
-    }
+                    <ErrorBoundary>
+                        <CharList onCharSelect={onCharSelect}/>
+                    </ErrorBoundary>
+                    <ErrorBoundary><CharInfo selectedChar={selectedChar}/></ErrorBoundary>
+                </div>
+                <img className="bg-decoration" src={decoration} alt="vision"/>
+            </main>
+        </div>
+    )
 }
 
 const DynamicGreeting = (props) => {
@@ -88,28 +80,20 @@ const Fields = (props) => {
         </div>
     )
 }
-class Counter extends Component {
-    state = {
-        counter: 0
+const Counter = (props) => {
+
+    const [counter, setCounter] = useState(0);
+
+    const increase = () => {
+        setCounter(counter => counter + 1)       
     }
 
-    increase = () => {
-        this.setState(state => ({
-            counter: state.counter + 1
-        }))
-        
-    }
-
-    render() {
-        return (
-            <div style={{display: 'flex'}}>
-                <button onClick={this.increase}>inc</button>
-
-                {this.props.render(this.state.counter)}
-
-            </div>
-        )
-    }
+    return (
+        <div style={{display: 'flex'}}>
+            <button onClick={increase}>inc</button>
+            {props.render(counter)}
+        </div>
+    )
 }
 
 export default App;
