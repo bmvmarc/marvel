@@ -42,13 +42,21 @@ const App = () => {
 
             <AppHeader/>
             <main>
-                <ErrorBoundary><RandomChar/></ErrorBoundary>                    
+                
+                <ErrorBoundary>
+                    <RandomChar/>
+                </ErrorBoundary>    
+
                 <div className="char__content">
 
                     <ErrorBoundary>
                         <CharList onCharSelect={onCharSelect}/>
                     </ErrorBoundary>
-                    <ErrorBoundary><CharInfo selectedChar={selectedChar}/></ErrorBoundary>
+
+                    <ErrorBoundary>
+                        <CharInfo selectedChar={selectedChar}/>
+                    </ErrorBoundary>
+
                 </div>
                 <img className="bg-decoration" src={decoration} alt="vision"/>
             </main>

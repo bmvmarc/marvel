@@ -1,17 +1,14 @@
 import './charList.scss';
 import { useState, useEffect, useRef } from 'react';
-import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
 import PropTypes from 'prop-types';
+import useMarvelService from '../../services/MarvelService';
 
 const CharList = (props) => {
- 
-    const serv = new MarvelService()
+     const { loading, error, getAllCharacters } = useMarvelService();
 
     const [list, setList] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const [shift, setShift] = useState(210);
     const [charsEnded, setCharsEnded] = useState(false);
 
@@ -35,24 +32,13 @@ const CharList = (props) => {
     }, [shift]);
 
     const updateList = () => {
-        setLoading(true);
-        setError(false);
-
-        serv.getAllCharacters(shift)
+        getAllCharacters(shift)
             .then(onListLoaded)
-            .catch(onError);
     }
 
     const onListLoaded = (newListPart) => {
         setList(list => [...list, ...newListPart]);
-        setLoading(false);
         setCharsEnded(newListPart.length < 9);
-    }
-
-    const onError = () => {
-        setList([]);
-        setError(true);
-        setLoading(false);
     }
 
     const onClickLoadMore = () => {
@@ -82,7 +68,7 @@ const CharList = (props) => {
     const spinner = loading ? <Spinner/> : null;
     const errorMessage = error ? <Error/> : null;
 
-    const listChar = list.map((item, i) => 
+    const listChar = list.map(item => 
                 <li key={item.id} 
                     ref={setRef} 
                     data-id={item.id}
@@ -108,25 +94,15 @@ const CharList = (props) => {
                         className="char__name">
                             {item.name}
                     </div>
-                    {spinner}
-                    {errorMessage}
                 </li>
                 );
-
-    const listErrLoad = []; 
-    for (let i = 0; i < 6; i++) {
-        listErrLoad.push(
-            <li style={{padding: 0, display: 'flex', alignItems: 'center', backgroundColor: 'white'}} key={i} className="char__item">
-                {spinner}
-                {errorMessage}
-            </li>
-        )
-    }
 
     return (
         <div className="char__list">
             <ul className="char__grid">
-                {!( loading || errorMessage) ? listChar : listErrLoad}    
+                {spinner}
+                {errorMessage}
+                {listChar}
             </ul>
             <button 
                 id='observer'
