@@ -5,6 +5,7 @@ import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
 import Skeleton from '../skeleton/Skeleton'
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 const CharInfo = (props) => {
 
@@ -74,14 +75,16 @@ const View = ({char: {name, description, thumbnail, homepage, wiki, comics}}) =>
 }
 
 const Comics = ({comicsList}) => {
+    console.log(comicsList)
     return (
-        comicsList.slice(0, 10).map((i, key) => (
-            <li key={i.resourceURI} data-url={i.resourceURI} className="char__comics-item">
-                {i.name}
+        comicsList.slice(0, 10).map(item => (
+            <li key={item.id} className="char__comics-item">
+                <Link to={`/comics/${item.id}`}>{item.name}</Link>
             </li>
         ))
     );
 }
+
 
 CharInfo.propTypes = {
     selectedChar: PropTypes.number

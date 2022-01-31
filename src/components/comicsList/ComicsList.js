@@ -4,12 +4,13 @@ import useMarvelService from '../../services/MarvelService';
 import Error from '../error/Error';
 import Spinner from '../spinner/Spinner';
 import propTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 
 const ComicsList = (props) => {
     const { loading, error, getAllComics } = useMarvelService();
 
     const [list, setList] = useState([]);    
-    const [offset, setOffset] = useState(0);
+    const [offset, setOffset] = useState(37750);
     const [comicsEnded, setComicsEnded] = useState(false);
     const [initial, setInitial] = useState(true);
 
@@ -21,7 +22,6 @@ const ComicsList = (props) => {
         console.log(offset)
         setOffset(offset => offset + 8);
         getAllComics( offset ).then( onComicsLoaded );
-
     }
 
     const onComicsLoaded = (resList) => {
@@ -33,10 +33,10 @@ const ComicsList = (props) => {
     }
 
     const comicsList = list.map((item, i) => (<>
-        <li key={item.id} 
+        <li key={i} 
             className="comics__item">
             
-            <a href="#">
+            <Link to={`/comics/${item.id}`}>
                 <img 
                     style={ item.thumbnail.includes('image_not_available.jpg') ? {objectFit: 'cover', objectPosition: 'left bottom'} : {}}
                     src={item.thumbnail} 
@@ -44,8 +44,7 @@ const ComicsList = (props) => {
                     className="comics__item-img"/>
                 <div className="comics__item-name">{item.title}</div>
                 <div className="comics__item-price">{`${item.price}$`}</div>
-            </a>
-            
+            </Link>            
         </li>       
     </>));
 

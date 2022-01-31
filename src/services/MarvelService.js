@@ -24,7 +24,7 @@ const useMarvelService = () => {
         return res.data.results.map(i => _transformComics(i));      
     }
 
-    const getComics = async (id) => {
+    const getComic = async (id) => {
         const res = await request(`${_apiBase}comics/${id}?${_apiKey}`);
         return _transformComics(res.data.results[0]);              
     }
@@ -40,7 +40,15 @@ const useMarvelService = () => {
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
             wiki: char.urls[1].url,
-            comics: char.comics.items.length ? char.comics.items : [{resourceURI: '', name: 'There are no comics with this character yet'}]
+            comics: char.comics.items.length ? 
+                    char.comics.items.map(item => ({  id: +item.resourceURI.substring(item.resourceURI.search('/comics/') + 8),
+                                                      name: item.name
+                                                    })
+                                             ) : 
+                    [{
+                        id: '', 
+                        name: 'There are no comics with this character'
+                    }]
         }
     }
 
@@ -49,11 +57,14 @@ const useMarvelService = () => {
             id: comics.id,
             title: comics.title,
             thumbnail: comics.thumbnail.path + '.' + comics.thumbnail.extension,
-            price: comics.prices.length ? comics.prices[0].price : 'N/A'
+            price: comics.prices.length ? comics.prices[0].price : 'N/A',
+            description: comics.description || 'There is no description',
+            pageCount: comics.pageCount ? `${comics.pageCount} p.` : 'No information about the number of pages',
+            language: comics.textObjects.language || 'en-us'
         }
     }    
 
-    return { loading, error, getAllCharacters, getCharacter, clearError, getAllComics, getComics };
+    return { loading, error, getAllCharacters, getCharacter, clearError, getAllComics, getComic };
 
 }
 
