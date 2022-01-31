@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import useMarvelService from '../../services/MarvelService';
 
 const CharList = (props) => {
-     const { loading, error, getAllCharacters } = useMarvelService();
+    const { loading, error, getAllCharacters } = useMarvelService();
 
     const [list, setList] = useState([]);
     const [shift, setShift] = useState(210);
@@ -27,7 +27,6 @@ const CharList = (props) => {
     }, []);
 
     useEffect(() => {
-        console.log('eff', shift)
         updateList()
     }, [shift]);
 

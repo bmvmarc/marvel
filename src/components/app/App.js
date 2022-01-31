@@ -1,66 +1,48 @@
 import AppHeader from "../appHeader/AppHeader";
-import RandomChar from "../randomChar/RandomChar";
-import CharList from "../charList/CharList";
-import CharInfo from "../charInfo/CharInfo";
-
-import decoration from '../../resources/img/vision.png';
 import React, { useState } from "react";
-import ErrorBoundary from "../errorBoundary/ErrorBoundary";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { MainPage, ComicsPage } from "../pages";
+
 
 const App = () => {
-
-    const [selectedChar, setChar] = useState(null);
-
-    const onCharSelect = (id) => {
-        setChar(id)
-    }
-
+  
     const showChildrenAndRenderPropsExample = false;
 
     return (
-        <div className="app">
-            { showChildrenAndRenderPropsExample ? 
-                <>
-                    <Fields
-                        left = {
-                            <DynamicGreeting color={'primary'}>
-                                <h2>jopa</h2>
-                                <h3>lunatic asylum</h3>
-                            </DynamicGreeting>                        
-                        }
+        <Router>
+            <div className="app">
+                { showChildrenAndRenderPropsExample ? 
+                    <>
+                        <Fields
+                            left = {
+                                <DynamicGreeting color={'primary'}>
+                                    <h2>jopa</h2>
+                                    <h3>lunatic asylum</h3>
+                                </DynamicGreeting>                        
+                            }
 
-                        right = {
-                            <><h4> The right field </h4>
-                            </>
-                        }
-                    />
-                    <Counter render = {counter => <h6> count: {counter}</h6>}/>
-                    <Counter render = {counter => <div> another count: {counter}</div>}/>
-                </>
-            : null
-            }
+                            right = {
+                                <><h4> The right field </h4>
+                                </>
+                            }
+                        />
+                        <Counter render = {counter => <h6> count: {counter}</h6>}/>
+                        <Counter render = {counter => <div> another count: {counter}</div>}/>
+                    </>
+                : null
+                }
 
-            <AppHeader/>
-            <main>
-                
-                <ErrorBoundary>
-                    <RandomChar/>
-                </ErrorBoundary>    
+                <AppHeader/>
+                <main>
+                    
+                    <Routes>
+                        <Route path='/' element={ <MainPage/> }/>
+                        <Route path='/comics' element={ <ComicsPage/> }/>
+                    </Routes>
 
-                <div className="char__content">
-
-                    <ErrorBoundary>
-                        <CharList onCharSelect={onCharSelect}/>
-                    </ErrorBoundary>
-
-                    <ErrorBoundary>
-                        <CharInfo selectedChar={selectedChar}/>
-                    </ErrorBoundary>
-
-                </div>
-                <img className="bg-decoration" src={decoration} alt="vision"/>
-            </main>
-        </div>
+                </main>
+            </div>
+        </Router>
     )
 }
 
